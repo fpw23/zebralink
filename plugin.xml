@@ -7,7 +7,7 @@
 	<description>Cordova/Phonegap plugin for Zebra bluetooth printers</description>
     <license>Apache</license>
     <engines>
-        <engine name="cordova" version=">=4.0.0" />
+        <engine name="cordova" version=">=5.0.0" />
     </engines>    
 
     <js-module src="www/zebralink.js" name="ZebraLink">
@@ -19,6 +19,8 @@
 
       <config-file target="AndroidManifest.xml" parent="/*">
          <uses-permission android:name="android.permission.BLUETOOTH" />
+         <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+         <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
       </config-file>
 	  <source-file src="src/android/com/apache/cordova/plugins/zebra/ZebraLink.java" target-dir="src/com/apache/cordova/plugins/zebra/" />
 

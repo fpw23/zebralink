@@ -25,7 +25,18 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+
+
 public class ZebraLink extends CordovaPlugin {
+
+	class PermissionCheckRunnable {
+		public CallbackContext cid;
+		public Runnable runner;
+	}
+
+	public static final String FINE_LOCATION = "android.permission.ACCESS_FINE_LOCATION";
+	public static final int DISCOVER_REQ_CODE = 0;
+	private PermissionCheckRunnable _permissionCheckRunnable = null;
 
 	public class ZebraLinkException extends Exception
 	{
@@ -95,7 +106,14 @@ public class ZebraLink extends CordovaPlugin {
 			cid.sendPluginResult(async);
 			try
 			{
-				new Discover(this,inargs,cid).run();
+				if (cordova.hasPermission(ZebraLink.FINE_LOCATION)) {
+					new Discover(this,inargs,cid).run();
+				} else {
+					this._permissionCheckRunnable = new PermissionCheckRunnable();
+					this._permissionCheckRunnable.cid = cid;
+					this._permissionCheckRunnable.runner = new Discover(this,inargs,cid);
+					cordova.requestPermission(this, ZebraLink.DISCOVER_REQ_CODE, ZebraLink.FINE_LOCATION);
+				}
 			}
 			catch(Throwable t)
 			{
@@ -214,6 +232,24 @@ public class ZebraLink extends CordovaPlugin {
 		return dict;
 	}
 
+	@Override
+	public void onRequestPermissionResult(int requestCode, String[] permissions, int[] grantResults) throws JSONException
+	{
+		for(int r:grantResults)
+		{
+			if(r == -1) // permission denied
+			{
+				this._permissionCheckRunnable.cid.sendPluginResult(new PluginResult(PluginResult.Status.ERROR));
+				return;
+			}
+		}
+		switch(requestCode)
+		{
+			case ZebraLink.DISCOVER_REQ_CODE:
+				this._permissionCheckRunnable.runner.run();
+				break;
+		}
+	}
 
 	public String printerStatusMessageForStatus(JSONObject dict)
 	{
@@ -343,7 +379,7 @@ public class ZebraLink extends CordovaPlugin {
 			}
 
 			@Override
-			public void foundPrinter(DiscoveredPrinter printer)
+			public void foundPrinter(final DiscoveredPrinter printer)
 			{
 				DiscoveredPrinterBluetooth pr = (DiscoveredPrinterBluetooth) printer;
 
