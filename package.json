@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/davidmricardo/zebralink.git"
+    "url": "git+https://github.com/fpw23/zebralink.git"
   },
   "keywords": [
     "ecosystem:cordova",
@@ -25,7 +25,7 @@
   "author": "",
   "license": "Apache",
   "bugs": {
-    "url": "https://github.com/davidmricardo/zebralink/issues"
+    "url": "https://github.com/fpw23/zebralink/issues"
   },
-  "homepage": "https://github.com/davidmricardo/zebralink#readme"
+  "homepage": "https://github.com/fpw23/zebralink#readme"
 }
