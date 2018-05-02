@@ -7,6 +7,7 @@ import com.zebra.sdk.comm.BluetoothConnection;
 import com.zebra.sdk.comm.BluetoothConnectionInsecure;
 import com.zebra.sdk.device.MagCardReader;
 import com.zebra.sdk.device.MagCardReaderFactory;
+import com.zebra.sdk.printer.PrinterLanguage;
 import com.zebra.sdk.printer.PrinterStatus;
 import com.zebra.sdk.printer.ZebraPrinter;
 import com.zebra.sdk.printer.ZebraPrinterFactory;
@@ -15,6 +16,7 @@ import com.zebra.sdk.printer.discovery.DiscoveredPrinter;
 import com.zebra.sdk.printer.discovery.DiscoveredPrinterBluetooth;
 import com.zebra.sdk.printer.discovery.DiscoveryHandler;
 import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
 import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
@@ -107,7 +109,7 @@ public class ZebraLink extends CordovaPlugin {
 			try
 			{
 				if (cordova.hasPermission(ZebraLink.FINE_LOCATION)) {
-					new Discover(this,inargs,cid).run();
+					cordova.getThreadPool().execute(new Discover(this,inargs,cid));
 				} else {
 					this._permissionCheckRunnable = new PermissionCheckRunnable();
 					this._permissionCheckRunnable.cid = cid;
@@ -134,7 +136,7 @@ public class ZebraLink extends CordovaPlugin {
 				public void run() { /* Looper.prepare(); */ z.connect(this.arguments,this.callbackId); /* Looper.myLooper().quit(); */ }
 
 			}
-			new Connect(this,inargs,cid).run();
+			cordova.getThreadPool().execute(new Connect(this,inargs,cid));
 			cid.sendPluginResult(async);
 			return true;
 		}
@@ -150,7 +152,7 @@ public class ZebraLink extends CordovaPlugin {
 				public void run() { z.swipe(this.arguments,this.callbackId); }
 			}
 			cid.sendPluginResult(async);
-			new Swipe(this,inargs,cid).run();
+			cordova.getThreadPool().execute(new Swipe(this,inargs,cid));
 			return true;
 		}
 		if (action.equals(PRINT))
@@ -165,7 +167,7 @@ public class ZebraLink extends CordovaPlugin {
 				public void run() {z.print(this.arguments,this.callbackId); }
 			}
 			cid.sendPluginResult(async);
-			new Print(this,inargs,cid).run();
+			cordova.getThreadPool().execute(new Print(this,inargs,cid));
 			return true;
 		}
 		if (action.equals(CHECK))
@@ -181,7 +183,7 @@ public class ZebraLink extends CordovaPlugin {
 			}
 
 			cid.sendPluginResult(async);
-			new Check(this,inargs,cid).run();
+			cordova.getThreadPool().execute(new Check(this,inargs,cid));
 			return true;
 		}
 
@@ -246,7 +248,7 @@ public class ZebraLink extends CordovaPlugin {
 		switch(requestCode)
 		{
 			case ZebraLink.DISCOVER_REQ_CODE:
-				this._permissionCheckRunnable.runner.run();
+				cordova.getThreadPool().execute(this._permissionCheckRunnable.runner);
 				break;
 		}
 	}
@@ -495,7 +497,7 @@ public class ZebraLink extends CordovaPlugin {
 		// must already be in a synchronized block
 		try
 		{
-			ZebraPrinter printer = ZebraPrinterFactory.getInstance(connection);
+			ZebraPrinter printer = ZebraPrinterFactory.getInstance(PrinterLanguage.ZPL, connection);
 
 			if(printer != null)
 			{
@@ -546,7 +548,7 @@ public class ZebraLink extends CordovaPlugin {
 				}
 			}
 
-			//	printerIsConnectedAndReady();
+			printerIsConnectedAndReady();
 
 			JSONObject argDict = arguments.getJSONObject(0);
 			template = argDict.getString("template");
